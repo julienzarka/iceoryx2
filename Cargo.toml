@@ -151,6 +151,7 @@ iceoryx2-services-tunnel-conformance-tests = { version = "0.8.999", path = "iceo
 iceoryx2-services-tunnel-end-to-end-tests = { version = "0.8.999", path = "iceoryx2-services/tunnel-end-to-end-tests" }
 iceoryx2-services-tunnel-zenoh = { version = "0.8.999", path = "iceoryx2-services/tunnel-zenoh"}
 iceoryx2-userland-record-and-replay = { version = "0.8.999", path = "iceoryx2-userland/record-and-replay" }
+iceoryx2-dmabuf = { version = "0.8.999", path = "iceoryx2-dmabuf/" }
 
 ################################################################################
 # Not Published, No Version Number
