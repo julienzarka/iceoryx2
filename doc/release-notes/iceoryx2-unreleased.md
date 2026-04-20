@@ -45,6 +45,16 @@
   the trait impl and enforce all invariants (`#[repr(C)]`, no padding, field
   bounds) at compile time
   [#1547](https://github.com/eclipse-iceoryx/iceoryx2/issues/1547)
+* Introduce `iceoryx2-dmabuf` crate providing an `SCM_RIGHTS` fd sidecar
+  (`FdSidecarPublisher`/`FdSidecarSubscriber`) and a typed DMA-BUF wrapper
+  (`DmaBufPublisher`/`DmaBufSubscriber`, behind the `dma-buf` feature)
+  layered on iceoryx2 pub/sub for zero-copy frame delivery of kernel-owned
+  file descriptors (V4L2 ISP, DRM scanout, Vulkan external memory)
+  [#1570](https://github.com/eclipse-iceoryx/iceoryx2/issues/1570)
+* Introduce `SideChannel` trait in `iceoryx2::port::side_channel` as an
+  extension point for out-of-band transports alongside pub/sub (companion
+  to `iceoryx2-dmabuf`)
+  [#1570](https://github.com/eclipse-iceoryx/iceoryx2/issues/1570)
 
 ### Bugfixes
 
