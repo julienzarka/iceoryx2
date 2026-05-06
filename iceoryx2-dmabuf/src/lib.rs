@@ -41,7 +41,7 @@ pub mod dmabuf_publisher;
 #[cfg(all(target_os = "linux", feature = "dma-buf"))]
 pub mod dmabuf_subscriber;
 pub mod external_buffer;
-pub(crate) mod path;
+pub mod path;
 pub mod port_factory;
 pub mod service;
 pub mod service_error;

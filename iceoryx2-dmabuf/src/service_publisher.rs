@@ -203,4 +203,31 @@ where
             Ok(None)
         }
     }
+
+    /// Number of subscribers currently connected on the fd channel.
+    ///
+    /// Intended for callers that need to snapshot the live subscriber count
+    /// before publishing a pool-tracked frame (e.g. count-based ack ledgers).
+    /// Not part of the hot path; involves a mutex acquisition inside the
+    /// underlying [`crate::connection::linux::LinuxPublisher`].
+    ///
+    /// On non-Linux targets returns `Ok(0)`.
+    ///
+    /// # Errors
+    ///
+    /// - [`ServiceError::Connection`] — if the underlying subscriber-list mutex
+    ///   was poisoned by a panicking thread.
+    pub fn connected_subscriber_count(&self) -> Result<usize, ServiceError> {
+        #[cfg(target_os = "linux")]
+        {
+            self.fd_pub
+                .connected_subscriber_count()
+                .map_err(ServiceError::Connection)
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        {
+            Ok(0)
+        }
+    }
 }
