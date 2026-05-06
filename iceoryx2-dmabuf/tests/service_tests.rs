@@ -1,32 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 #![cfg(target_os = "linux")]
 
+mod common;
+use common::*;
+
 use iceoryx2_dmabuf::service::Service;
 use iceoryx2_dmabuf::service_publisher::DmaBufServicePublisher;
 use iceoryx2_dmabuf::service_subscriber::DmaBufServiceSubscriber;
-use std::os::fd::{AsFd as _, FromRawFd as _, OwnedFd};
+use std::os::fd::AsFd as _;
 use std::time::Duration;
-
-fn memfd(name: &core::ffi::CStr) -> OwnedFd {
-    let raw = unsafe { libc::memfd_create(name.as_ptr(), 0) };
-    assert!(raw >= 0);
-    unsafe { OwnedFd::from_raw_fd(raw) }
-}
-
-fn wait_until<F: FnMut() -> bool>(deadline: Duration, mut f: F) -> bool {
-    let start = std::time::Instant::now();
-    while start.elapsed() < deadline {
-        if f() {
-            return true;
-        }
-        std::thread::sleep(Duration::from_millis(2));
-    }
-    f()
-}
-
-fn unique_service_name(tag: &str) -> String {
-    format!("dmabuf/test/{}/{}", std::process::id(), tag)
-}
 
 #[test]
 fn service_open_create_idempotent() {

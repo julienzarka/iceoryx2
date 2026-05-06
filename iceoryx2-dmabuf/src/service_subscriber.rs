@@ -70,7 +70,7 @@ where
     /// - [`ServiceError::Connection`] — if connecting to the UDS socket fails (Linux only).
     pub(crate) fn create(
         meta_factory: &IceoryxPortFactory<ipc::Service, Meta, ()>,
-        socket_path: &str,
+        socket_path: &std::path::Path,
     ) -> Result<Self, ServiceError> {
         let meta_sub = meta_factory
             .subscriber_builder()
@@ -85,7 +85,7 @@ where
             #[cfg(target_os = "linux")]
             fd_sub,
             #[cfg(not(target_os = "linux"))]
-            _socket_path: socket_path.to_owned(),
+            _socket_path: socket_path.to_string_lossy().into_owned(),
         })
     }
 

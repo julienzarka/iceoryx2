@@ -8,34 +8,12 @@
 //! measured by (st_dev, st_ino). This validates that SCM_RIGHTS transfers the
 //! same kernel object, not a copy.
 
+mod common;
+use common::*;
+
 use iceoryx2_dmabuf::{DmaBufPublisher, DmaBufSubscriber};
-use std::os::fd::{AsFd as _, FromRawFd as _, OwnedFd};
+use std::os::fd::AsFd as _;
 use std::time::Duration;
-
-/// Poll until predicate returns true, or deadline elapses (last check included).
-/// Synchronous test-only helper; sleep is intentional, not inside any async context.
-fn wait_until<F: FnMut() -> bool>(deadline: Duration, mut f: F) -> bool {
-    let start = std::time::Instant::now();
-    while start.elapsed() < deadline {
-        if f() {
-            return true;
-        }
-        // Intentional: synchronous test polling helper, not in production or async code.
-        std::thread::sleep(Duration::from_millis(2));
-    }
-    f()
-}
-
-/// Create a memfd of `len` bytes via libc.
-fn memfd_raw(name: &core::ffi::CStr, len: i64) -> OwnedFd {
-    // SAFETY: memfd_create is a well-known Linux syscall; name is a valid NUL-terminated CStr.
-    let raw = unsafe { libc::memfd_create(name.as_ptr(), 0) };
-    assert!(raw >= 0, "memfd_create failed");
-    // SAFETY: raw is a valid fd returned by memfd_create; ftruncate sets the size.
-    let _ = unsafe { libc::ftruncate(raw, len) };
-    // SAFETY: raw is a valid, owned file descriptor.
-    unsafe { OwnedFd::from_raw_fd(raw) }
-}
 
 #[test]
 fn fd_identity_preserved_through_roundtrip() {
@@ -43,7 +21,7 @@ fn fd_identity_preserved_through_roundtrip() {
     const BUF_SIZE: i64 = 4096;
     const DEADLINE: Duration = Duration::from_millis(500);
 
-    let owned_fd = memfd_raw(c"dmabuf-identity-test", BUF_SIZE);
+    let owned_fd = memfd_sized(c"dmabuf-identity-test", BUF_SIZE);
 
     // Record (st_dev, st_ino) before publishing.
     let stat_before = rustix::fs::fstat(&owned_fd).expect("fstat publisher fd");

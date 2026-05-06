@@ -18,15 +18,16 @@
 //! self-documenting and makes future extensions (alignment, allocator-id, …)
 //! source-compatible.
 
-use std::os::fd::OwnedFd;
+use std::os::fd::{AsFd as _, BorrowedFd, OwnedFd};
 
 /// An externally-allocated buffer identified by an fd and a byte length.
+///
+/// Fields are private to preserve the invariant that `len` matches the fd's
+/// actual allocated size after construction.
 #[derive(Debug)]
 pub struct ExternalFdBuffer {
-    /// The file descriptor referencing the buffer (DMA-BUF, memfd, …).
-    pub fd: OwnedFd,
-    /// Size of the buffer in bytes.
-    pub len: usize,
+    fd: OwnedFd,
+    len: usize,
 }
 
 impl ExternalFdBuffer {
@@ -34,5 +35,27 @@ impl ExternalFdBuffer {
     #[must_use]
     pub fn new(fd: OwnedFd, len: usize) -> Self {
         Self { fd, len }
+    }
+
+    /// Returns the size of the buffer in bytes.
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    /// Returns `true` if the buffer has zero length.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
+    /// Borrows the underlying file descriptor.
+    pub fn as_fd(&self) -> BorrowedFd<'_> {
+        self.fd.as_fd()
+    }
+
+    /// Consumes `self` and returns the underlying `OwnedFd`.
+    pub fn into_fd(self) -> OwnedFd {
+        self.fd
     }
 }

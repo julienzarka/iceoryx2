@@ -11,7 +11,7 @@ use core::fmt::Debug;
 
 use iceoryx2::prelude::ZeroCopySend;
 
-use crate::dmabuf_publisher::DmaBufError;
+use crate::dmabuf_error::DmaBufError;
 use crate::port_factory::DmabufPortFactory;
 use crate::service::Service;
 use crate::service_subscriber::DmaBufServiceSubscriber;

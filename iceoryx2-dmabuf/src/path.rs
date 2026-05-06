@@ -38,12 +38,13 @@ fn fnv1a_64(bytes: &[u8]) -> u64 {
 /// `ICEORYX2_DMABUF_SOCKET_DIR` env var — useful in tests to isolate
 /// concurrent test runs).
 ///
-/// The returned path has the form `<base>/<16-hex-u64>.sock`.
-pub fn uds_path_for_service(service_name: &str) -> String {
-    let base = std::env::var("ICEORYX2_DMABUF_SOCKET_DIR")
-        .unwrap_or_else(|_| DEFAULT_SOCKET_DIR.to_owned());
-    let digest = fnv1a_64(service_name.as_bytes());
-    format!("{base}/{digest:016x}.sock")
+/// The returned `PathBuf` has the form `<base>/<16-hex-u64>.sock`.
+pub fn uds_path_for_service(service_name: &str) -> std::path::PathBuf {
+    let base = std::env::var_os("ICEORYX2_DMABUF_SOCKET_DIR")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| std::path::PathBuf::from(DEFAULT_SOCKET_DIR));
+    let h = fnv1a_64(service_name.as_bytes());
+    base.join(format!("{h:016x}.sock"))
 }
 
 // TEST 9 — unit tests for path derivation.
@@ -68,7 +69,8 @@ mod tests {
     #[test]
     fn path_format_contains_iox2_dmabuf_and_ends_with_sock() {
         let p = uds_path_for_service("test");
-        assert!(p.contains("iox2-dmabuf"), "got {p}");
-        assert!(p.ends_with(".sock"), "got {p}");
+        let s = p.to_string_lossy();
+        assert!(s.contains("iox2-dmabuf"), "got {s}");
+        assert!(p.extension().is_some_and(|e| e == "sock"), "got {s}");
     }
 }

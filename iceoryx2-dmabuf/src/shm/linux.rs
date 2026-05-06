@@ -43,6 +43,12 @@ impl Drop for Linux {
 
 impl FdBackedSharedMemory for Linux {
     fn from_owned_fd(fd: OwnedFd, len: usize) -> io::Result<Self> {
+        if len == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "fd-backed SHM cannot be zero-length",
+            ));
+        }
         // SAFETY: fd is a valid OwnedFd; mmap with PROT_READ|PROT_WRITE and
         // MAP_SHARED is well-defined for memfd/DMA-BUF fds of at least `len`
         // bytes. Returns MAP_FAILED on error.

@@ -35,6 +35,8 @@
 
 pub mod connection;
 #[cfg(all(target_os = "linux", feature = "dma-buf"))]
+pub mod dmabuf_error;
+#[cfg(all(target_os = "linux", feature = "dma-buf"))]
 pub mod dmabuf_publisher;
 #[cfg(all(target_os = "linux", feature = "dma-buf"))]
 pub mod dmabuf_subscriber;
@@ -48,7 +50,9 @@ pub mod service_subscriber;
 pub mod shm;
 
 #[cfg(all(target_os = "linux", feature = "dma-buf"))]
-pub use dmabuf_publisher::{DmaBufError, DmaBufPublisher};
+pub use dmabuf_error::DmaBufError;
+#[cfg(all(target_os = "linux", feature = "dma-buf"))]
+pub use dmabuf_publisher::DmaBufPublisher;
 #[cfg(all(target_os = "linux", feature = "dma-buf"))]
 pub use dmabuf_subscriber::DmaBufSubscriber;
 

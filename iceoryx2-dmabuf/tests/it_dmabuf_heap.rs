@@ -12,6 +12,9 @@
 //! Skipped (not failed) when `/dev/dma_heap/system` is absent — expected on
 //! developer machines and CI environments without the dma-heap kernel module.
 
+mod common;
+use common::*;
+
 use iceoryx2_dmabuf::{DmaBufPublisher, DmaBufSubscriber};
 use std::os::fd::AsFd as _;
 use std::time::Duration;
@@ -21,20 +24,6 @@ const BUF_SIZE: usize = 4096;
 const MAGIC: u8 = 0xAB;
 const SERVICE: &str = "dmabuf/test/heap";
 const DEADLINE: Duration = Duration::from_millis(500);
-
-/// Poll until predicate returns true, or deadline elapses (last check included).
-/// Synchronous test-only helper; sleep is intentional, not inside any async context.
-fn wait_until<F: FnMut() -> bool>(deadline: Duration, mut f: F) -> bool {
-    let start = std::time::Instant::now();
-    while start.elapsed() < deadline {
-        if f() {
-            return true;
-        }
-        // Intentional: synchronous test polling helper, not in production or async code.
-        std::thread::sleep(Duration::from_millis(2));
-    }
-    f()
-}
 
 #[test]
 fn heap_allocation_roundtrip_with_sync_ioctl() {

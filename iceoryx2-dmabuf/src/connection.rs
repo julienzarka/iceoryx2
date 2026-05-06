@@ -130,6 +130,13 @@ pub trait FdPassingConnection: Sized {
     ///
     /// Wire format: `[8B len LE][8B token LE][SCM_RIGHTS fd]`.
     ///
+    /// On any per-subscriber `sendmsg` error (EAGAIN, EPIPE, ECONNRESET),
+    /// the subscriber is pruned from the connected list. EAGAIN (slow
+    /// consumer) is treated identically to EPIPE (dead consumer): one
+    /// dropped frame leads to permanent removal. This is a deliberate
+    /// "fail fast" policy. If you need slow-consumer tolerance, run a
+    /// per-subscriber buffering layer above this trait.
+    ///
     /// Returns `Ok(())` even if a peer disconnected during the call
     /// (broken-pipe pruning removes the dead peer silently).
     fn send_with_fd(&self, fd: BorrowedFd<'_>, len: u64, token: u64) -> Result<()>;
@@ -154,6 +161,10 @@ pub trait FdPassingConnection: Sized {
     fn send_release_ack(&self, token: u64) -> Result<()>;
 
     /// Non-blocking poll for one back-channel ack frame.
+    ///
+    /// Returns AT MOST ONE token per call. Callers that need to drain all
+    /// pending acks must loop until `Ok(None)` is returned. The publisher
+    /// implementation iterates connected subscriber streams round-robin.
     ///
     /// Returns `Ok(None)` if no ack is currently queued.
     /// Returns `Ok(Some(token))` when an ack is drained.

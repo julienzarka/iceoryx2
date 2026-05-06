@@ -1,34 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 #![cfg(target_os = "linux")]
 
+mod common;
+use common::*;
+
 use iceoryx2_dmabuf::connection::{FdPassingConnection, Linux};
-use std::os::fd::{AsFd as _, FromRawFd as _, OwnedFd};
+use std::os::fd::AsFd as _;
 use std::time::Duration;
-
-fn unique_socket_path(tag: &str) -> String {
-    format!("/tmp/iox2-conntest-{}-{}.sock", std::process::id(), tag)
-}
-
-fn memfd(name: &core::ffi::CStr) -> OwnedFd {
-    let raw = unsafe { libc::memfd_create(name.as_ptr(), 0) };
-    assert!(raw >= 0);
-    unsafe { OwnedFd::from_raw_fd(raw) }
-}
-
-/// Poll until a closure returns true, or until timeout.
-/// Intentional blocking sleep: this is synchronous test code only,
-/// not used in any production or async path.
-fn wait_until<F: FnMut() -> bool>(deadline: Duration, mut f: F) -> bool {
-    let start = std::time::Instant::now();
-    while start.elapsed() < deadline {
-        if f() {
-            return true;
-        }
-        // Intentional: synchronous test polling helper, not in production code.
-        std::thread::sleep(Duration::from_millis(2));
-    }
-    f()
-}
 
 #[test]
 fn send_recv_memfd_roundtrip() {

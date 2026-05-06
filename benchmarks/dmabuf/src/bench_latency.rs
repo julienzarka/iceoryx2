@@ -77,6 +77,9 @@ mod linux {
         iters: usize,
         warmup: usize,
     ) -> Result<(), Box<dyn core::error::Error>> {
+        if iters == 0 {
+            return Err("iters must be >= 1".into());
+        }
         use iceoryx2_dmabuf::{DmaBufPublisher, DmaBufSubscriber};
         use std::time::Instant;
 

@@ -33,7 +33,7 @@ where
     Meta: ZeroCopySend + Debug + Copy + 'static,
 {
     meta_factory: IceoryxPortFactory<ipc::Service, Meta, ()>,
-    socket_path: String,
+    socket_path: std::path::PathBuf,
     /// Declared LAST — dropped last. See struct-level doc.
     _node: Node<ipc::Service>,
 }
@@ -46,7 +46,7 @@ where
     pub(crate) fn new(
         node: Node<ipc::Service>,
         meta_factory: IceoryxPortFactory<ipc::Service, Meta, ()>,
-        socket_path: String,
+        socket_path: std::path::PathBuf,
     ) -> Self {
         Self {
             meta_factory,
@@ -88,7 +88,7 @@ where
     Meta: ZeroCopySend + Debug + Copy + 'static,
 {
     pub(crate) meta_factory: &'a IceoryxPortFactory<ipc::Service, Meta, ()>,
-    pub(crate) socket_path: &'a str,
+    pub(crate) socket_path: &'a std::path::Path,
 }
 
 impl<Meta> PublisherBuilder<'_, Meta>
@@ -117,7 +117,7 @@ where
     Meta: ZeroCopySend + Debug + Copy + 'static,
 {
     pub(crate) meta_factory: &'a IceoryxPortFactory<ipc::Service, Meta, ()>,
-    pub(crate) socket_path: &'a str,
+    pub(crate) socket_path: &'a std::path::Path,
 }
 
 impl<Meta> SubscriberBuilder<'_, Meta>

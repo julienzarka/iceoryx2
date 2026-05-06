@@ -68,7 +68,7 @@ impl Service {
     {
         // Derive socket path and ensure the parent directory exists.
         let socket_path = crate::path::uds_path_for_service(name);
-        if let Some(parent) = std::path::Path::new(&socket_path).parent() {
+        if let Some(parent) = socket_path.parent() {
             std::fs::create_dir_all(parent).map_err(ServiceError::Io)?;
         }
 

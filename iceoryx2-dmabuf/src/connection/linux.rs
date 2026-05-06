@@ -64,7 +64,7 @@ const MAGIC_BUFFER_RELEASED: u32 = 0x4D4F_5346;
 ///
 /// The socket file is removed on [`Drop`].
 pub struct LinuxPublisher {
-    socket_path: String,
+    socket_path: std::path::PathBuf,
     subscribers: Arc<Mutex<Vec<UnixStream>>>,
     shutdown: Arc<AtomicBool>,
     accept_thread: Option<thread::JoinHandle<()>>,
@@ -74,7 +74,7 @@ impl LinuxPublisher {
     /// Bind `socket_path`, spawn the accept thread, and return a publisher.
     ///
     /// Any stale socket file at `socket_path` is removed before binding.
-    pub fn open(socket_path: &str) -> Result<Self> {
+    pub fn open(socket_path: &std::path::Path) -> Result<Self> {
         // Remove stale socket file if present.
         let _ = std::fs::remove_file(socket_path);
 
@@ -95,14 +95,8 @@ impl LinuxPublisher {
                 match listener_clone.accept() {
                     Ok((stream, _addr)) => {
                         #[cfg(feature = "peercred")]
-                        {
-                            if let Err(_e) = check_peer_uid(&stream) {
-                                #[cfg(debug_assertions)]
-                                eprintln!(
-                                    "iceoryx2-dmabuf: peercred check failed, rejecting connection"
-                                );
-                                continue;
-                            }
+                        if check_peer_uid(&stream).is_err() {
+                            continue; // silent rejection; UID check failed
                         }
                         if let Ok(mut subs) = subs_clone.lock() {
                             subs.push(stream);
@@ -125,7 +119,7 @@ impl LinuxPublisher {
         });
 
         Ok(Self {
-            socket_path: socket_path.to_owned(),
+            socket_path: socket_path.to_path_buf(),
             subscribers,
             shutdown,
             accept_thread: Some(accept_thread),
@@ -338,7 +332,7 @@ pub struct LinuxSubscriber {
 
 impl LinuxSubscriber {
     /// Connect to `socket_path` (publisher must already be listening).
-    pub fn open(socket_path: &str) -> Result<Self> {
+    pub fn open(socket_path: &std::path::Path) -> Result<Self> {
         let stream = UnixStream::connect(socket_path)?;
         stream.set_nonblocking(true)?;
         Ok(Self { stream })
@@ -506,13 +500,13 @@ pub struct Linux;
 
 impl Linux {
     /// Open a publisher on `socket_path`.
-    pub fn open_publisher(socket_path: &str) -> Result<LinuxPublisher> {
-        LinuxPublisher::open(socket_path)
+    pub fn open_publisher(socket_path: impl AsRef<std::path::Path>) -> Result<LinuxPublisher> {
+        LinuxPublisher::open(socket_path.as_ref())
     }
 
     /// Open a subscriber on `socket_path`.
-    pub fn open_subscriber(socket_path: &str) -> Result<LinuxSubscriber> {
-        LinuxSubscriber::open(socket_path)
+    pub fn open_subscriber(socket_path: impl AsRef<std::path::Path>) -> Result<LinuxSubscriber> {
+        LinuxSubscriber::open(socket_path.as_ref())
     }
 }
 

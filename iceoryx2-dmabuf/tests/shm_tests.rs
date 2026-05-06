@@ -28,7 +28,7 @@ fn memfd(name: &core::ffi::CStr, len: i64) -> OwnedFd {
 fn external_fd_buffer_carries_fd_and_len() {
     let fd = memfd(c"buf", 0);
     let buf = ExternalFdBuffer::new(fd, 4096);
-    assert_eq!(buf.len, 4096);
+    assert_eq!(buf.len(), 4096);
 }
 
 #[test]
