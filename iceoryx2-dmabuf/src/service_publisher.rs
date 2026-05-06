@@ -159,7 +159,7 @@ where
                 .map_err(ServiceError::Connection)?;
 
             // 2. Loan iceoryx2 slot, write payload, send.
-            let mut sample = self
+            let sample = self
                 .meta_pub
                 .loan_uninit()
                 .map_err(|e| ServiceError::Iceoryx(e.to_string()))?;

@@ -28,6 +28,7 @@ pub struct Linux {
 // dma_buf::DmaBuf wrapper or equivalent for CPU-sync on cache-incoherent
 // SoCs). Marking only Send (not Sync) preserves the invariant that the
 // caller owns synchronization.
+#[allow(unsafe_code)]
 unsafe impl Send for Linux {}
 
 impl Drop for Linux {

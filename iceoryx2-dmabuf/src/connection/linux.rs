@@ -29,7 +29,7 @@ use rustix::net::{
     SendAncillaryMessage, SendFlags,
 };
 use std::io::{IoSlice, IoSliceMut, Write as _};
-use std::os::fd::{AsFd as _, BorrowedFd, OwnedFd};
+use std::os::fd::{AsFd as _, AsRawFd as _, BorrowedFd, OwnedFd};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
